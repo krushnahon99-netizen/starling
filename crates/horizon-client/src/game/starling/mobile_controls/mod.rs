@@ -1305,7 +1305,7 @@ impl Game<'_> {
             MouseButton::Left
         };
         if matches!(self.screen, Screen::Inventory | Screen::Creative) {
-            self.android_custom_mouse(button, down)
+            self.android_custom_mouse(button, down)?;
         } else {
             let id = if id == WindowId::dummy() {
                 self.window.as_ref().map_or(WindowId::dummy(), |w| w.id())
@@ -1325,14 +1325,16 @@ impl Game<'_> {
                     },
                 },
             );
-            if !right && !down {
-                self.touch_field_click();
-                if self.on_text_field() == Some(true) {
-                    self.android_show_keyboard();
-                }
-            }
-            Ok(())
         }
+        // On every screen, the inventory and creative ones too: the Left button's click on a
+        // text field (the creative search) opens the keyboard, as a tap on the touchpad does.
+        if !right && !down {
+            self.touch_field_click();
+            if self.on_text_field() == Some(true) {
+                self.android_show_keyboard();
+            }
+        }
+        Ok(())
     }
     pub(super) fn android_aux_touch(
         &mut self,
